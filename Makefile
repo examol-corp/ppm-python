@@ -8,6 +8,6 @@ OBJS = opm.o min.o rmsd.o solva.o readpdb.o read_small.o watface.o \
 EXEC = immers
 
 load: $(OBJS)
-	 gfortran-9 -O -g -o $(EXEC) $(OBJS)
+	 gfortran -O -g -o $(EXEC) $(OBJS)
 .f.o:
-	 gfortran-9 $(F77FLAGS) -O -c $<
+	 gfortran $(F77FLAGS) -O -c $<
