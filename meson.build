@@ -21,9 +21,16 @@ immers = py.extension_module('immers',
 )
 
 py.install_sources(
-    ['src/ppm2/__init__.py', 'src/ppm2/__main__.py'],
+    [
+        'src/ppm2/__init__.py',
+        'src/ppm2/__main__.py',
+        'src/ppm2/_pkg_data/__init__.py',
+        'src/ppm2/_pkg_data/res.lib',
+        'src/ppm2/_bin/__init__.py',
+    ],
     subdir: 'ppm2'
 )
+
 executable('immers',
   fortran_sources,
   install: true,
