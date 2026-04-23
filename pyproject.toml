@@ -1,0 +1,26 @@
+[build-system]
+requires = ["meson-python >= 0.13", "numpy >= 2.0"]
+build-backend = "mesonpy"
+
+[project]
+name = "ppm2"
+version = "0.0.0"
+dependencies = ["numpy"]
+
+[project.scripts]
+
+immers2 = "ppm2.__main__:main"
+
+[dependency-groups]
+
+dev = [
+    "pdbpp",
+    "ipython",
+]
+
+test = [
+    "pytest",
+]
+
+[tool.uv]
+default-groups = ["dev", "test"]
