@@ -1,1 +1,0 @@
-{"output_pdb": "tests/examples/test-wrapped-cli/integral/output/1rsy_oriented.pdb", "placement": {"hydrophobic_thickness": 2.6, "hydrophobic_depth": 10.0, "tilt_angle": 23.0, "tilt_angle_err": 19.0, "transfer_energy": -4.4}, "transmembrane_regions": {"subunits": {}}}
