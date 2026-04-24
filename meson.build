@@ -4,7 +4,7 @@ project('ppm2',
         meson_version: '>= 1.3.0',
 )
 
-py = import('python').find_installation(pure: false)
+py = import('python').find_installation(pure: true)
 
 fortran_sources = files(
   'opm.f', 'min.f', 'rmsd.f', 'solva.f', 'readpdb.f',
@@ -12,23 +12,9 @@ fortran_sources = files(
   'profile.f', 'hbcor.f', 'deftm.f', 'orient.f', 'find_segm.f'
 )
 
-# Modern & reliable way: let Meson handle the extension naming
-immers = py.extension_module('immers',
-  fortran_sources,
-  install: true,
-  subdir: 'ppm2',
-  fortran_args: ['-O', '-g'],
-)
-
-py.install_sources(
-    [
-        'src/ppm2/__init__.py',
-        'src/ppm2/__main__.py',
-        'src/ppm2/_pkg_data/__init__.py',
-        'src/ppm2/_pkg_data/res.lib',
-        'src/ppm2/_bin/__init__.py',
-    ],
-    subdir: 'ppm2'
+install_subdir(
+    'src/ppm2',
+    install_dir: py.get_install_dir(pure: true)
 )
 
 executable('immers',

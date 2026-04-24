@@ -1,15 +1,22 @@
 [build-system]
-requires = ["meson-python >= 0.13", "numpy >= 2.0"]
+requires = [
+    "meson-python >= 0.13",
+]
 build-backend = "mesonpy"
 
 [project]
 name = "ppm2"
 version = "0.0.0"
-dependencies = ["numpy"]
+dependencies = [
+    "cyclopts",
+    "attrs",
+    "cattrs",
+]
 
 [project.scripts]
 
-immers2 = "ppm2.__main__:main"
+immers2 = "ppm2.immers_exe:main"
+ppm2 = "ppm2.cli:app"
 
 [dependency-groups]
 
