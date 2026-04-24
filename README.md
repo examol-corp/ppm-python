@@ -41,9 +41,9 @@ found at `src/ppm2/_pkg_data/res.lib`.
 Run the raw bundled executable:
 
 ```console
-cd tests/examples/testA
-immers2 < input.inp
-cd -
+$ cd tests/examples/testA
+$ immers2 < input.inp
+$ cd -
 ```
 
 Note that you need to have a `res.lib` file in the cwd when executing.
@@ -51,7 +51,11 @@ Note that you need to have a `res.lib` file in the cwd when executing.
 #### Wrapped Executor CLI
 
 ```console
-  ppm2 run \
+  $ ppm2 run --help
+```
+
+```console
+  $ ppm2 run \
     tests/examples/test-wrapped-cli/integral/input/1gzm.pdb \
     tests/examples/test-wrapped-cli/integral/output/1gzm_oriented.pdb \
     --topology in > tests/examples/test-wrapped-cli/integral/output/1gzm.ppm_report.json

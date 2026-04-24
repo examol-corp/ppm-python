@@ -19,27 +19,26 @@ readme = "README.md"
 description = "PPM Python: Positioning of Proteins in Membranes Python Wrapper"
 
 
-authors = {
-    { name = "BioMembHub Team", website = "https://biomembhub.org/" }
-    { name = "Andrei Lomize", email = "lomizeal@gmail.com" },
-    { name = "Wonpil Im", email = "wonpil@lehigh.edu" },
-    { name = "Samuel Lotz", email = "samuel.lotz@salotz.info" }
-}
+authors = [
+# { name = "BioMembHub Team", website = "https://biomembhub.org/" },
+{ name = "Andrei Lomize", email = "lomizeal@gmail.com" },
+{ name = "Wonpil Im", email = "wonpil@lehigh.edu" },
+{ name = "Samuel Lotz", email = "samuel.lotz@salotz.info" }
+]
 
-maintainers = {
-    { name = "Samuel Lotz", email = "samuel.lotz@salotz.info" }
-}
+maintainers = [
+{ name = "Samuel Lotz", email = "samuel.lotz@salotz.info" }
+]
 
 license = "GPL-3.0-only"
 license-files = ["license.txt"]
 
-urls = {
-   homepage = "https://github.com/examol-corp/ppm-python",
-   source = "https://github.com/examol-corp/ppm-python",
-}
 
 keywords = ["ppm", "ppm2", "opm", "membrane proteins", "science", "positioning of proteins in membranes"]
 
+[project.urls]
+homepage = "https://github.com/examol-corp/ppm-python"
+source = "https://github.com/examol-corp/ppm-python"
 
 [project.scripts]
 
