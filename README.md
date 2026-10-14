@@ -16,7 +16,7 @@ some light wrappers around it to make it easier to use.
 ## Installation
 
 ```console
-pip install git+https://github.com/examol-corp/ppm2.git
+pip install git+https://github.com/examol-corp/ppm-python.git
 ```
 
 ## Usage
