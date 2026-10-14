@@ -7,6 +7,7 @@ import tempfile
 import importlib.resources
 
 import attrs
+import mdtraj
 
 Topology = Literal["in", "out"]
 TOPOLOGYS = frozenset(get_args(Topology))
@@ -111,6 +112,25 @@ def run_wrapped_immers_plain(
 
 
 @attrs.define
+class MembraneZ:
+    """Hydrophobic slab along z in the oriented PPM frame, in angstroms.
+
+    After immers orientation the bilayer midplane is z=0 and the membrane
+    normal is +z. Dummy N atoms sit on `lower`, dummy O atoms on `upper`.
+    `hydrophobic_depth` is not used: that is a protein insertion statistic,
+    not a plane location.
+    """
+    midplane: float
+    lower: float
+    upper: float
+    half_thickness: float
+
+    def contains(self, z: float) -> bool:
+        """True if z is inside the hydrophobic core, inclusive of the planes."""
+        return self.lower <= z <= self.upper
+
+
+@attrs.define
 class PlacementData:
     # in angstroms
     hydrophobic_thickness: float
@@ -120,6 +140,15 @@ class PlacementData:
     tilt_angle_err: float
     # in kcal/mol
     transfer_energy: float
+
+    def membrane_z(self) -> MembraneZ:
+        half = self.hydrophobic_thickness / 2.0
+        return MembraneZ(
+            midplane=0.0,
+            lower=-half,
+            upper=half,
+            half_thickness=half,
+        )
 
 @attrs.define
 class SubunitSegment:
@@ -142,7 +171,13 @@ class ImmersOutput:
     output_pdb: Path
     placement: PlacementData
     transmembrane_regions: TransmembraneRegions
-    
+
+@attrs.define
+class PPMReport:
+    placement: PlacementData
+    transmembrane_regions: TransmembraneRegions
+    membrane_z: MembraneZ
+
 def parse_datapar(f: Path) -> PlacementData:
     text = f.read_text()
 
@@ -192,6 +227,7 @@ def parse_datasub(f: Path):
         subunits=subunits,
     )
 
+
 def run_wrapped_immers(
         input_pdb: Path,
         output_pdb: Path,
@@ -223,4 +259,47 @@ def run_wrapped_immers(
             output_pdb=output_pdb,
             placement=placement_data,
             transmembrane_regions=tm_data,
+        )
+
+def _clean_immers_pdb(
+        input_pdb: Path,
+) -> mdtraj.Trajectory:
+
+    in_traj = mdtraj.load(str(input_pdb))
+    # remove dummy atoms
+    protein_only_traj = in_traj.atom_slice(in_traj.topology.select("not resname DUM"))
+
+    return protein_only_traj
+    
+def run_and_clean(
+        input_pdb: Path,
+        output_pdb: Path,
+        topology: Topology,
+        keep_heterogens: bool,
+) -> PPMReport:
+
+    
+    with tempfile.TemporaryDirectory("immers-extract") as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+
+        plain_output = run_wrapped_immers_plain(
+            input_pdb=input_pdb,
+            output_dir=tmp_dir,
+            topology=topology,
+            keep_heterogens=keep_heterogens,
+        )
+
+        # parse the par and sub files
+        placement_data = parse_datapar(plain_output.datapar_file)
+        tm_data = parse_datasub(plain_output.datasub_file)
+
+        clean_traj = _clean_immers_pdb(plain_output.output_pdb)
+        clean_traj.save(output_pdb)
+
+        membrane_z = placement_data.membrane_z()
+
+        return PPMReport(
+            placement=placement_data,
+            transmembrane_regions=tm_data,
+            membrane_z=membrane_z,
         )

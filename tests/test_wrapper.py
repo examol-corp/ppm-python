@@ -103,3 +103,33 @@ def test_run_wrapped_immers(test_data, tmp_path):
         )
 
     assert output.output_pdb.exists()
+
+
+def test_membrane_z_from_placement():
+    from ppm2 import MembraneZ, PPMReport
+
+    placement = PlacementData(
+        hydrophobic_thickness=37.8,
+        hydrophobic_depth=1.6,
+        tilt_angle=11.0,
+        tilt_angle_err=0.0,
+        transfer_energy=-90.8,
+    )
+    planes = placement.membrane_z()
+    assert planes == MembraneZ(
+        midplane=0.0,
+        lower=-18.9,
+        upper=18.9,
+        half_thickness=18.9,
+    )
+    assert planes.contains(0.0)
+    assert planes.contains(18.9)
+    assert planes.contains(-18.9)
+    assert not planes.contains(18.91)
+    assert not planes.contains(-19.0)
+
+    report = PPMReport(
+        placement=placement,
+        transmembrane_regions=TransmembraneRegions(subunits={}),
+    )
+    assert report.membrane_z() == planes

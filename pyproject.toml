@@ -12,6 +12,7 @@ dependencies = [
     "cyclopts",
     "attrs",
     "cattrs",
+    "mdtraj",
 ]
 
 readme = "README.md"
