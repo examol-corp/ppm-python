@@ -7,6 +7,7 @@ from .wrapper import (
     Subunit,
     TransmembraneRegions,
     ImmersOutput,
+    Topology,
 )
 
 __version__ = "0.0.0"
@@ -21,4 +22,5 @@ __all__ = [
     "Subunit",
     "TransmembraneRegions",
     "ImmersOutput",
+    "Topology",
 ]
