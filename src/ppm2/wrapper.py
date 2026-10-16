@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from typing import Literal, get_args
 import shutil
-import os
 import subprocess
 from pathlib import Path
 import tempfile
@@ -115,33 +116,60 @@ def run_wrapped_immers_plain(
 class MembraneZ:
     """Hydrophobic slab along z in the oriented PPM frame, in angstroms.
 
-    After immers orientation the bilayer midplane is z=0 and the membrane
-    normal is +z. Dummy N atoms sit on `lower`, dummy O atoms on `upper`.
-    `hydrophobic_depth` is not used: that is a protein insertion statistic,
-    not a plane location.
+    After orientation the bilayer midplane is ``z = 0`` and the membrane
+    normal is ``+z``. Dummy N atoms (lower leaflet) sit on ``lower``,
+    dummy O atoms (upper leaflet) on ``upper``.
+
+    ``PlacementData.hydrophobic_depth`` is **not** a plane: it is a
+    protein insertion statistic. Planes come only from
+    ``hydrophobic_thickness / 2``.
+
+    These values are in **Å**. ``mdtraj.Trajectory.xyz`` is **nm**.
     """
+
     midplane: float
+    """Always 0.0 in the PPM frame."""
+
     lower: float
+    """Lower leaflet hydrophobic plane, ``-half_thickness`` Å."""
+
     upper: float
+    """Upper leaflet hydrophobic plane, ``+half_thickness`` Å."""
+
     half_thickness: float
+    """``hydrophobic_thickness / 2``, Å."""
 
     def contains(self, z: float) -> bool:
-        """True if z is inside the hydrophobic core, inclusive of the planes."""
+        """True if ``z`` (Å) is inside the hydrophobic core, inclusive."""
         return self.lower <= z <= self.upper
 
 
 @attrs.define
 class PlacementData:
-    # in angstroms
+    """Scalar placement stats parsed from immers ``datapar1``.
+
+    All lengths are Å. ``tilt_angle`` is degrees off the membrane
+    normal. ``transfer_energy`` is kcal/mol (more negative = more
+    favourable insertion).
+    """
+
     hydrophobic_thickness: float
+    """Full hydrophobic slab thickness, Å. Planes at ``± thickness/2``."""
+
     hydrophobic_depth: float
-    # degrees
+    """Protein insertion statistic, Å. Not a membrane plane."""
+
     tilt_angle: float
+    """TM-bundle tilt off ``+z``, degrees."""
+
     tilt_angle_err: float
-    # in kcal/mol
+    """Reported uncertainty on ``tilt_angle``, degrees."""
+
     transfer_energy: float
+    """Transfer free energy, kcal/mol."""
 
     def membrane_z(self) -> MembraneZ:
+        """Hydrophobic planes from thickness: midplane 0, ``± thickness/2``."""
         half = self.hydrophobic_thickness / 2.0
         return MembraneZ(
             midplane=0.0,
@@ -150,20 +178,43 @@ class PlacementData:
             half_thickness=half,
         )
 
+
 @attrs.define
 class SubunitSegment:
+    """One transmembrane span on one chain.
+
+    ``start_res_idx`` and ``end_res_idx`` are **1-based inclusive PDB
+    resSeq**, matching immers ``datasub1``. Not 0-based slices.
+    """
+
     index: int
+    """1-based segment index within the subunit, as reported by PPM."""
+
     start_res_idx: int
+    """First residue of the span (inclusive, PDB resSeq)."""
+
     end_res_idx: int
+    """Last residue of the span (inclusive, PDB resSeq)."""
+
 
 @attrs.define
 class Subunit:
+    """TM spans of one chain / PPM subunit."""
+
     name: str
+    """PDB chain id, e.g. ``"A"``."""
+
     tilt_angle: float
+    """Per-subunit tilt reported by PPM, degrees."""
+
     regions: list[SubunitSegment]
-    
+    """TM segments in N→C order."""
+
+
 @attrs.define
 class TransmembraneRegions:
+    """TM segments keyed by subunit / chain id."""
+
     subunits: dict[str, Subunit]
     
 @attrs.define
@@ -174,6 +225,18 @@ class ImmersOutput:
 
 @attrs.define
 class PPMReport:
+    """Parsed PPM 2 placement (scalars + TM residue ranges).
+
+    Produced by :func:`run_and_clean`. JSON round-trip via cattrs.
+
+    ``placement`` has tilt / thickness / ΔG. ``transmembrane_regions``
+    has the 1-based inclusive resSeq spans. ``membrane_z`` is the
+    hydrophobic slab in Å (midplane 0).
+
+    This object does **not** store a Cartesian rotation. The immers
+    frame is the cleaned ``oriented.pdb``. Lengths are **Å**.
+    """
+
     placement: PlacementData
     transmembrane_regions: TransmembraneRegions
     membrane_z: MembraneZ
@@ -191,7 +254,7 @@ def parse_datapar(f: Path) -> PlacementData:
         transfer_energy=float(entries[5]),
     )
 
-def parse_datasub(f: Path):
+def parse_datasub(f: Path) -> TransmembraneRegions:
 
     text = f.read_text()
 
@@ -277,8 +340,13 @@ def run_and_clean(
         topology: Topology,
         keep_heterogens: bool,
 ) -> PPMReport:
+    """Run immers, strip DUM atoms, return a :class:`PPMReport`.
 
-    
+    ``input_pdb`` coordinates must be in Å (PDB default). Not checked.
+    ``PPMReport`` lengths are Å. The cleaned ``output_pdb`` is written
+    via mdtraj (still Å on disk; ``mdtraj.load`` then stores nm).
+    """
+
     with tempfile.TemporaryDirectory("immers-extract") as tmp_dir:
         tmp_dir = Path(tmp_dir)
 

@@ -19,6 +19,20 @@ some light wrappers around it to make it easier to use.
 pip install git+https://github.com/examol-corp/ppm-python.git
 ```
 
+## Units
+
+Input PDBs are assumed to be in **ångström** (the PDB format default).
+This is not checked or converted: immers reads the coordinate columns
+as Å and reports thickness / depth / dummy-atom planes in Å.
+
+`PPMReport` lengths are therefore Å (`hydrophobic_thickness`,
+`membrane_z.lower` / `.upper` / `.half_thickness`). Tilt is degrees;
+transfer energy is kcal/mol.
+
+The immers frame is the cleaned `oriented.pdb` (Å on disk).
+`mdtraj.load` stores those coordinates in **nm**. Scale when comparing
+to the report (`z_nm = z_Å / 10`).
+
 ## Usage
 
 In PPM2 and PPM3 the executable is named `immers` in both. Wheel

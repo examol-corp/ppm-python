@@ -131,5 +131,6 @@ def test_membrane_z_from_placement():
     report = PPMReport(
         placement=placement,
         transmembrane_regions=TransmembraneRegions(subunits={}),
+        membrane_z=planes,
     )
-    assert report.membrane_z() == planes
+    assert report.membrane_z == planes

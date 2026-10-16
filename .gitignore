@@ -1,4 +1,6 @@
 *.o
+*.pyc
+__pycache__/
 immers
 .~*#
 *~
@@ -7,3 +9,5 @@ datasub*
 output
 build/
 dist/
+.venv/
+test-venv/

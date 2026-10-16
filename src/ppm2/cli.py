@@ -44,6 +44,11 @@ def run(
         topology: Topology,
         keep_heterogens: bool = False,
 ):
+    """Run immers and print a JSON ``ImmersOutput`` on stdout.
+
+    Input PDB coordinates are assumed to be in ångström (PDB default).
+    This is not checked. Placement lengths in the JSON are Å.
+    """
 
     output = run_wrapped_immers(
         input_pdb=input,
